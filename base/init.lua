@@ -1,2 +1,5 @@
 vim.notify("Hello from init.lua")
 require("config.lazy")
+require("config.options")
+require("config.diagnostics")
+require("config.theme")

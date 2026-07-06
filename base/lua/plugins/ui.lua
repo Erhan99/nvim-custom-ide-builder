@@ -8,6 +8,22 @@ return{
         end,
     },
     {
+        "folke/tokyonight.nvim",
+        priority = 1000
+    },
+    {
+        "scottmckendry/cyberdream.nvim",
+        priority = 1000,
+    },
+    {
+        "rebelot/kanagawa.nvim",
+        priority = 1000,
+    },
+    {
+        "navarasu/onedark.nvim",
+        priority = 1000,
+    },
+    {
         "nvim-lualine/lualine.nvim",
         dependencies = {
             "nvim-tree/nvim-web-devicons",
