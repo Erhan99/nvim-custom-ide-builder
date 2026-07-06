@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 from pick import pick
 from config import config
-from builder import apply_theme
+from builder import build
 
 def main():
     print("hello")
@@ -33,7 +33,7 @@ def select_theme():
 
 def create_config(theme):
     config.theme = theme
-    apply_theme(config)
+    build(config)
 
 if __name__=="__main__":
     main()
