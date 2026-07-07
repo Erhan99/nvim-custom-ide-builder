@@ -1,31 +1,63 @@
+local function get_language_config()
+  local ok, languages = pcall(require, "config.languages")
+
+  if ok and type(languages) == "table" then
+    return languages
+  end
+
+  return {
+    lsp_servers = {},
+    formatters_by_ft = {},
+  }
+end
+
 return {
-    {
-        "williamboman/mason.nvim",
+  {
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup()
+    end,
+  },
 
-        config = function()
-            require("mason").setup()
-        end,
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "neovim/nvim-lspconfig",
     },
+    config = function()
+      local languages = get_language_config()
 
-    {
-        "williamboman/mason-lspconfig.nvim",
+      require("mason-lspconfig").setup({
+        ensure_installed = languages.lsp_servers or {},
+      })
+    end,
+  },
 
-        dependencies = {
-            "williamboman/mason.nvim",
-            "neovim/nvim-lspconfig",
-        },
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      local languages = get_language_config()
+      local lspconfig = require("lspconfig")
 
-        config = function()
-            require("mason-lspconfig").setup()
-        end,
-    },
+      for _, server in ipairs(languages.lsp_servers or {}) do
+        if lspconfig[server] then
+          lspconfig[server].setup({})
+        end
+      end
+    end,
+  },
 
-    {
-        "neovim/nvim-lspconfig",
-    },
-
-    {
-        "stevearc/conform.nvim",
-        opts = {},
-    },
+  {
+    "stevearc/conform.nvim",
+    opts = function(_, opts)
+      opts = opts or {}
+      local languages = get_language_config()
+      opts.formatters_by_ft = vim.tbl_deep_extend(
+        "force",
+        opts.formatters_by_ft or {},
+        languages.formatters_by_ft or {}
+      )
+    end,
+  },
 }

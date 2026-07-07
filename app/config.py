@@ -22,6 +22,6 @@ def detect_os() -> str:
 config = BuilderConfig(
         theme = "catppuccin",
         os = detect_os(),
-        languages = ["python"],
+        languages = [],
         ai = []
         )

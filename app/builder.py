@@ -13,6 +13,59 @@ EXECUTABLES = {
     "fd": ["fd", "fdfind"],
 }
 
+LANGUAGE_SUPPORT = {
+    "python": {
+        "treesitter": ["python"],
+        "lsp": ["pyright"],
+        "formatters": ["black"],
+    },
+    "javascript": {
+        "treesitter": ["javascript"],
+        "lsp": ["tsserver"],
+        "formatters": ["prettier"],
+    },
+    "typescript": {
+        "treesitter": ["typescript"],
+        "lsp": ["tsserver"],
+        "formatters": ["prettier"],
+    },
+    "java": {
+        "treesitter": ["java"],
+        "lsp": ["jdtls"],
+        "formatters": ["google_java_format"],
+    },
+    "c#": {
+        "treesitter": ["c_sharp"],
+        "lsp": ["omnisharp"],
+        "formatters": ["csharpier"],
+    },
+    "c++": {
+        "treesitter": ["cpp"],
+        "lsp": ["clangd"],
+        "formatters": ["clang_format"],
+    },
+    "c": {
+        "treesitter": ["c"],
+        "lsp": ["clangd"],
+        "formatters": ["clang_format"],
+    },
+    "php": {
+        "treesitter": ["php"],
+        "lsp": ["intelephense"],
+        "formatters": ["php_cs_fixer"],
+    },
+    "go": {
+        "treesitter": ["go"],
+        "lsp": ["gopls"],
+        "formatters": ["gofmt"],
+    },
+    "rust": {
+        "treesitter": ["rust"],
+        "lsp": ["rust_analyzer"],
+        "formatters": ["rustfmt"],
+    },
+}
+
 def is_installed(tool):
     executable = EXECUTABLES[tool]
 
@@ -42,10 +95,11 @@ def build(config):
     apply_theme(config.theme)
     
     generate_ai(config)
+    configure_neovim_to_support_languages(config)
 
 
 def apply_theme(theme):
-    source = Path("../themes") / f"{theme}.lua"
+    source = Path(__file__).resolve().parent.parent / "themes" / f"{theme}.lua"
 
     destination = (
         Path.home()
@@ -56,6 +110,7 @@ def apply_theme(theme):
         / "theme.lua"
     )
 
+    destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, destination)
 
 INSTALLERS = {
@@ -203,11 +258,24 @@ def to_lua(value):
         items = []
 
         for key, val in value.items():
-            items.append(f"{key} = {to_lua(val)}")
+            lua_key = key if isinstance(key, str) and key.isidentifier() else f'["{key}"]'
+            items.append(f"{lua_key} = {to_lua(val)}")
 
         return "{ " + ", ".join(items) + " }"
 
     raise TypeError(f"Unsupported type: {type(value)}")
+
+
+def unique(values):
+    seen = set()
+    result = []
+
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            result.append(value)
+
+    return result
 
 def generate_ai(config):
     destination = (
@@ -218,6 +286,8 @@ def generate_ai(config):
         / "plugins"
         / "ai.lua"
     )
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
 
     with open(destination, "w") as file:
         file.write("return {\n")
@@ -234,3 +304,51 @@ def generate_ai(config):
             file.write("    },\n\n")
 
         file.write("}\n")
+
+
+def configure_neovim_to_support_languages(config):
+    destination = (
+        Path.home()
+        / ".config"
+        / "nvim"
+        / "lua"
+        / "config"
+        / "languages.lua"
+    )
+
+    treesitter = []
+    lsp_servers = []
+    formatters_by_ft = {}
+
+    for language in config.languages:
+        support = LANGUAGE_SUPPORT.get(language)
+
+        if support is None:
+            raise RuntimeError(f"Unsupported language selection: {language}")
+
+        treesitter.extend(support.get("treesitter", []))
+        lsp_servers.extend(support.get("lsp", []))
+
+        for formatter in support.get("formatters", []):
+            filetypes = formatters_by_ft.setdefault(language_filetype(language), [])
+            if formatter not in filetypes:
+                filetypes.append(formatter)
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(destination, "w") as file:
+        file.write("return {\n")
+        file.write(f"  treesitter = {to_lua(unique(treesitter))},\n")
+        file.write(f"  lsp_servers = {to_lua(unique(lsp_servers))},\n")
+        file.write(f"  formatters_by_ft = {to_lua(formatters_by_ft)},\n")
+        file.write("}\n")
+
+
+def language_filetype(language):
+    match language:
+        case "c#":
+            return "cs"
+        case "c++":
+            return "cpp"
+        case _:
+            return language
