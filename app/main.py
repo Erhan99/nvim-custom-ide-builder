@@ -5,13 +5,12 @@ from config import config
 from builder import build
 
 def main():
-    print("hello")
-    print("making .conf folder...")
     create_config_folder()
 
     theme = select_theme()
+    ai_tools = select_ai_tools()
 
-    create_config(theme)
+    create_config(theme, ai_tools)
 
 def create_config_folder():
     nvim_config_folder = Path.home() / '.config' / 'nvim'
@@ -31,8 +30,17 @@ def select_theme():
     
     return theme
 
-def create_config(theme):
+def select_ai_tools():
+    tools = ["copilot", "codex", "claude code"]
+    title = "Select your AI assistant:"
+
+    selected = pick(tools, title, multiselect=True)
+
+    return [tool for tool, _ in selected]
+
+def create_config(theme, ai_tools):
     config.theme = theme
+    config.ai = ai_tools
     build(config)
 
 if __name__=="__main__":

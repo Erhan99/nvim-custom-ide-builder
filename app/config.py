@@ -5,6 +5,8 @@ import platform
 class BuilderConfig:
     theme:str
     os:str
+    languages: list[str]
+    ai: list[str]
 
 def detect_os() -> str:
     match platform.system():
@@ -19,5 +21,7 @@ def detect_os() -> str:
 
 config = BuilderConfig(
         theme = "catppuccin",
-        os = detect_os()
+        os = detect_os(),
+        languages = ["python"],
+        ai = []
         )

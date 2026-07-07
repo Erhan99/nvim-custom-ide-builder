@@ -10,7 +10,7 @@ class AptInstaller:
         "fd": "fd-find",
     }
 
-    def install(self, package):
+    def install_package(self, package):
         package_name = self.PACKAGES[package]
         subprocess.run(
             ["sudo", "apt", "install", "-y", package_name],
