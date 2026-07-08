@@ -16,14 +16,8 @@ def main():
 def create_config_folder():
     nvim_config_folder = get_nvim_config_dir(config.os)
     base_dir = Path(__file__).resolve().parent.parent / "base"
-
-    if nvim_config_folder.exists():
-        print("nvim config folder exists")
-    else:
-        print("creating nvim config folder from base")
-
     shutil.copytree(base_dir, nvim_config_folder, dirs_exist_ok=True)
-
+        
 def select_theme():
     themes = ["catppuccin", "tokyonight", "kanagawa", "cyberdream", "onedark"]
     title = "Select a theme:"

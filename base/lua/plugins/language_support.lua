@@ -38,12 +38,11 @@ return {
     "neovim/nvim-lspconfig",
     config = function()
       local languages = get_language_config()
-      local lspconfig = require("lspconfig")
 
       for _, server in ipairs(languages.lsp_servers or {}) do
-        if lspconfig[server] then
-          lspconfig[server].setup({})
-        end
+        -- Use the built-in LSP config API instead of the deprecated framework.
+        vim.lsp.config(server, {})
+        vim.lsp.enable(server)
       end
     end,
   },

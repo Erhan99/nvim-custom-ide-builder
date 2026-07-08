@@ -14,6 +14,12 @@ EXECUTABLES = {
     "fd": ["fd", "fdfind"],
 }
 
+PACKAGE_CHECKS = {
+    "neovim": "nvim",
+    "node": "node",
+    "npm": "npm",
+}
+
 LANGUAGE_SUPPORT = {
     "python": {
         "treesitter": ["python"],
@@ -68,6 +74,9 @@ LANGUAGE_SUPPORT = {
 }
 
 def is_installed(tool):
+    if tool in PACKAGE_CHECKS:
+        return shutil.which(PACKAGE_CHECKS[tool]) is not None
+
     executable = EXECUTABLES[tool]
 
     if isinstance(executable, list):
@@ -77,17 +86,24 @@ def is_installed(tool):
 
 def build(config):
     installer = get_installer()
+    packages = ("neovim", "node", "npm")
 
     if config.os == "linux":
-        if shutil.which("node") is None:
-            install_latest_node()
-        if shutil.which("nvim") is None:
-            install_latest_neovim()
+        for package in packages:
+            if is_installed(package):
+                continue
+
+            if package == "neovim":
+                install_latest_neovim()
+            elif package == "node":
+                install_latest_node()
+            elif package == "npm":
+                # npm is bundled with the Node.js install path on Linux.
+                continue
     else:
-        if not is_installed("neovim"):
-            installer.install("neovim")
-        if not is_installed("node"):
-            installer.install("node")
+        for package in packages:
+            if not is_installed(package):
+                installer.install(package)
 
     for exe in EXECUTABLES:
         if not is_installed(exe):
