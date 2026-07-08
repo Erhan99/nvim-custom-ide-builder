@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-import platform 
+import os
+import platform
+from pathlib import Path
 
 @dataclass
 class BuilderConfig:
@@ -18,6 +20,25 @@ def detect_os() -> str:
             return "macos"
         case _:
             raise RuntimeError("Unsupported operating system")
+
+
+def get_nvim_config_dir(os_name: str | None = None) -> Path:
+    if os_name is None:
+        os_name = detect_os()
+
+    match os_name:
+        case "windows":
+            local_app_data = os.environ.get("LOCALAPPDATA")
+            if local_app_data:
+                return Path(local_app_data) / "nvim"
+            return Path.home() / "AppData" / "Local" / "nvim"
+        case "macos":
+            return Path.home() / "Library" / "Application Support" / "nvim"
+        case _:
+            xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+            if xdg_config_home:
+                return Path(xdg_config_home) / "nvim"
+            return Path.home() / ".config" / "nvim"
 
 config = BuilderConfig(
         theme = "catppuccin",

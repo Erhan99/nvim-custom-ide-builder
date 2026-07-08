@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil
 from pick import pick
-from config import config
+from config import config, get_nvim_config_dir
 from builder import build
 
 def main():
@@ -14,7 +14,7 @@ def main():
     create_config(theme, languages, ai_tools)
 
 def create_config_folder():
-    nvim_config_folder = Path.home() / '.config' / 'nvim'
+    nvim_config_folder = get_nvim_config_dir(config.os)
     base_dir = Path(__file__).resolve().parent.parent / "base"
 
     if nvim_config_folder.exists():

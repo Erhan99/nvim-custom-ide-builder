@@ -6,6 +6,7 @@ import shutil
 from installers.winget import WingetInstaller
 from installers.apt import AptInstaller
 import subprocess
+from config import get_nvim_config_dir
 
 EXECUTABLES = {
     "git": "git",
@@ -101,14 +102,7 @@ def build(config):
 def apply_theme(theme):
     source = Path(__file__).resolve().parent.parent / "themes" / f"{theme}.lua"
 
-    destination = (
-        Path.home()
-        / ".config"
-        / "nvim"
-        / "lua"
-        / "config"
-        / "theme.lua"
-    )
+    destination = get_nvim_config_dir() / "lua" / "config" / "theme.lua"
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(source, destination)
@@ -219,7 +213,7 @@ AI_PLUGINS = {
                 "enabled" : True,
                 "auto_trigger": True,
                 "keymap": {
-                    "accept": "<Tab>",
+                    "accept": "<C-l>",
                     "next": "<M- ]>",
                     "prev": "<M- [>",
                     "dismiss": "<C- ]>",
@@ -278,14 +272,7 @@ def unique(values):
     return result
 
 def generate_ai(config):
-    destination = (
-        Path.home()
-        / ".config"
-        / "nvim"
-        / "lua"
-        / "plugins"
-        / "ai.lua"
-    )
+    destination = get_nvim_config_dir() / "lua" / "plugins" / "ai.lua"
 
     destination.parent.mkdir(parents=True, exist_ok=True)
 
@@ -307,14 +294,7 @@ def generate_ai(config):
 
 
 def configure_neovim_to_support_languages(config):
-    destination = (
-        Path.home()
-        / ".config"
-        / "nvim"
-        / "lua"
-        / "config"
-        / "languages.lua"
-    )
+    destination = get_nvim_config_dir() / "lua" / "config" / "languages.lua"
 
     treesitter = []
     lsp_servers = []
